@@ -1,7 +1,7 @@
 // react- redux
 import React from 'react'
 import propTypes from 'prop-types'
-
+import { bindActionCreators } from './my-redux'
 
 
 // connect负责链接组件，给redux里的数据放到组件的属性里
@@ -28,12 +28,23 @@ export const connect = (mapStateToProps=State=>state, mapDispatchToProps={})=>(W
             }
         }
         componentDidMount() {
-            const {store} = this.store
+            const {store} = this.context
+            store.subscribe(()=>this.update())
             this.update()
         }
         update() {
             const {store} = this.context
             const stateProps = mapStateToProps(store.getState())
+            // 此处的dispatchProps 是my-redux里的 bindActionCreators函数返回的bound对象
+            const dispatchProps = bindActionCreators(mapDispatchToProps,store.dispatch)
+            this.setState({
+                //需要注意顺序，下面的会覆盖上面的
+                props:{
+                    ...this.state.props,
+                    ...stateProps,
+                    ...dispatchProps
+                }
+            })
         }
         render() {
             return <WarpComponent {...this.state.props}></WarpComponent>
